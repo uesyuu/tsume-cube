@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Scramble generator to play Short moves scramble</title>
+</head>
+<script src="cube.js"></script>
+<script src="solve.js"></script>
+<body>
+    <h1>Scramble generator to play Short moves scramble (詰めキューブスクランブル生成器)</h1>
+    <label>input scramble</label>
+    <input type="text" id="scramble">
+    <input type="button" id="generate" value="generate">
+    <div id="result"></div>
+    <script>
+    const cube = new Cube();
+    Cube.initSolver();
+    turnList = ["U", "R", "F", "D", "L", "B", "U'", "R'", "F'", "D'", "L'", "B'", "U2", "R2", "F2", "D2", "L2", "B2"];
+
+    document.getElementById("generate").onclick = function(){
+        correctFlag = true;
+        beforeScramble = document.getElementById("scramble").value;
+        beforeScrambleList = beforeScramble.split(" ");
+        for(i=0; i<beforeScrambleList.length; i++){
+            if(turnList.indexOf(beforeScrambleList[i]) == -1){
+                alert("please input valid scramble");
+                correctFlag = false;
+                break;
+            }
+        }
+        if(correctFlag){
+            beforeScramble += " B' D' L' F' U' R' B' D' L' F' U' R'";
+            cube.identity();
+            cube.move(beforeScramble);
+            scramble = Cube.inverse(cube.solve());
+            scrambleList = scramble.split(" ");
+            if(scrambleList[scrambleList.length - 1] == "R"){
+                scramble = "";
+                for(i=0; i<scrambleList.length-1; i++){
+                    scramble += scrambleList[i] + " ";
+                }
+                scramble = scramble + " R2 U F L D B R U F L D B";
+            } else if(scrambleList[scrambleList.length - 1] == "R2"){
+                scramble = "";
+                for(i=0; i<scrambleList.length-1; i++){
+                    scramble += scrambleList[i] + " ";
+                }
+                scramble = scramble + " R' U F L D B R U F L D B";
+            } else if(scrambleList[scrambleList.length - 1] == "R'"){
+                scramble = "";
+                for(i=0; i<scrambleList.length-1; i++){
+                    scramble += scrambleList[i] + " ";
+                }
+                scramble = scramble + " U F L D B R U F L D B";
+            } else {
+                scramble = scramble + " R U F L D B R U F L D B";
+            }
+            document.getElementById("result").innerHTML = "scramble: " + scramble;
+        }
+    };
+    </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Short moves scramble</title>
+</head>
+<script src="cube.js"></script>
+<script src="solve.js"></script>
+<body>
+    <h1>Short moves scramble (詰めキューブ)</h1>
+    <input type="radio" id="selectRandomMove" name="selectMove" value="random">random generate
+    <input type="radio" id="selectDifficultMove" name="selectMove" value="difficult">difficult scramble
+    <div id="randomMove">
+        <label>moves: </label>
+        <select id="moveCount">
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+        </select>
+    </div>
+    <div id="difficultMove">
+        <label>scramble: </label>
+        <select id="difficultMoveCount">
+            <option value="Reto5_1">5moves① by Reto</option>
+            <option value="Reto5_2">5moves② by Reto</option>
+            <option value="Reto6_1">6moves① by Reto</option>
+            <option value="Reto6_2">6moves② by Reto</option>
+            <option value="Reto6_3">6moves③ by Reto</option>
+            <option value="Reto7_1">7moves① by Reto</option>
+            <option value="Reto7_2">7moves② by Reto</option>
+            <option value="Reto7_3">7moves③ by Reto</option>
+            <option value="Reto7_4">7moves④ by Reto</option>
+            <option value="Reto7_5">7moves⑤ by Reto</option>
+            <option value="Reto7_6">7moves⑥ by Reto</option>
+            <option value="Reto8_1">8moves① by Reto</option>
+            <option value="Reto8_2">8moves② by Reto</option>
+            <option value="Reto8_3">8moves③ by Reto</option>
+            <option value="Reto8_4">8moves④ by Reto</option>
+            <option value="Reto8_5">8moves⑤ by Reto</option>
+            <option value="Reto8_6">8moves⑥ by Reto</option>
+            <option value="Reto8_7">8moves⑦ by Reto</option>
+            <option value="Reto9_1">9moves① by Reto</option>
+            <option value="Reto9_2">9moves② by Reto</option>
+            <option value="Reto9_3">9moves③ by Reto</option>
+            <option value="Reto10_1">10moves① by Reto</option>
+            <option value="Reto10_2">10moves② by Reto</option>
+            <option value="Reto10_3">10moves③ by Reto</option>
+            <option value="Reto10_4">10moves④ by Reto</option>
+            <option value="Reto10_5">10moves⑤ by Reto</option>
+            <option value="Reto10_6">10moves⑥ by Reto</option>
+            <option value="Reto10_7">10moves⑦ by Reto</option>
+            <option value="Reto11_1">11moves① by Reto</option>
+            <option value="Reto11_2">11moves② by Reto</option>
+            <option value="Reto12_1">12moves① by Reto</option>
+        </select>
+    </div>
+    <input type="button" value="next scramble" onclick="initScramble()">
+    <div id="result"></div>
+    <input type='button' id='giveup' value='see solution'>
+    <div id="solution" style="visibility: hidden;"></div>
+    <script>
+    const cube = new Cube();
+    Cube.initSolver();
+    document.getElementById("randomMove").style.display = "block";
+    document.getElementById("difficultMove").style.display = "none";
+    moveFlag = true; // true: random, false: difficult
+    face = ["U", "R", "F", "D", "L", "B"];
+    turn = ["", "\'", "2"];
+    difficultMoveList = {
+        "Reto5_1": "F R' U F' R2 U' B' R B R2 U",
+        "Reto5_2": "F2 U2 R' L F2 L D2 L' D2 R L'",
+        "Reto6_1": "L' U2 B2 R' U' R U B2 L U2",
+        "Reto6_2": "L F L' F' U2 L' U' L F U2",
+        "Reto6_3": "D' R' D F2 L F2 L' D' R D",
+        "Reto7_1": "R' L' U2 R B R B2 L' R' B' L2 U2",
+        "Reto7_2": "R L' U' L U2 R' U L' U2 L",
+        "Reto7_3": "L F2 U B' U F2 U' B U' F2 L'",
+        "Reto7_4": "B' F U L D R D' L' U' B F'",
+        "Reto7_5": "F U R' D' L' F2 L D R U' F'",
+        "Reto7_6": "U L F' U' F' U' F' U F2 U L' U'",
+        "Reto8_1": "U R B' R2 B R' U F R2 F' R2",
+        "Reto8_2": "U2 F' U F U R B' R B R' U' R'",
+        "Reto8_3": "L2 B2 L R B2 R' U' L U2 R' U R",
+        "Reto8_4": "R2 D2 L D' L' D2 R F2 R' D R2",
+        "Reto8_5": "R' L F R F' D' L' U L D L' U'",
+        "Reto8_6": "L' B2 D' U R U' R B2 D L2 U' L'",
+        "Reto8_7": "U2 R L D' F' B' D2 F B D R' L'",
+        "Reto9_1": "L' U2 F' L D L' U2 L D' L' F L",
+        "Reto9_2": "R2 U' F U R F' R2 F R U' F' R'",
+        "Reto9_3": "D2 L U' L' U' R U R' L U L' D2",
+        "Reto10_1": "D2 L D2 L2 D2 L' F' L2 F L' D2 L",
+        "Reto10_2": "U2 L2 D' R B R' B' D L2 R' U R U",
+        "Reto10_3": "R2 B2 R' L' U D B2 U' D' B2 R' L",
+        "Reto10_4": "F U2 F' D2 F U2 F' R U R' D2 R U' R'",
+        "Reto10_5": "U R' D2 R U' R' F' L2 F' L2 F2 D2 R",
+        "Reto10_6": "U2 F2 R L F2 R' L' U' D' F2 U' D",
+        "Reto10_7": "R F2 U2 L' F2 L U2 R' D2 L D2 L'",
+        "Reto11_1": "B2 U2 B2 U L' D L' U L' U' L D' L",
+        "Reto11_2": "U' R U' R2 U B2 L2 D' F2 D L2 B2 R'",
+        "Reto12_1": "R L F B R L' F2 L2 F2 U D B2 R2 B2 R2"
+    };
+
+    function initScramble(){
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("solution").innerHTML = "";
+        document.getElementById("solution").style.visibility = "hidden";
+
+        scrambleLength = parseInt(document.getElementById("moveCount").options[document.getElementById("moveCount").selectedIndex].value);
+        scrambleFace = [];
+        scrambleTurn = [];
+        scramble = "";
+        solution = "";
+
+        if(moveFlag){
+            document.getElementById("giveup").style.visibility = "visible";
+
+            for(i=0; i<scrambleLength; i++){
+                scrambleFace.push(face[Math.floor(Math.random() * 6)]);
+                scrambleTurn.push(turn[Math.floor(Math.random() * 3)]);
+                if(i >= 1){
+                    if(scrambleFace[i-1] == scrambleFace[i]){
+                        scrambleFace.pop();
+                        scrambleTurn.pop();
+                        i--;
+                    }
+                }
+                if(i >= 2){
+                    if(scrambleFace[i-2] == scrambleFace[i] && (
+                        (scrambleFace[i-1] == "U" && scrambleFace[i] == "D") ||
+                        (scrambleFace[i-1] == "D" && scrambleFace[i] == "U") ||
+                        (scrambleFace[i-1] == "R" && scrambleFace[i] == "L") ||
+                        (scrambleFace[i-1] == "L" && scrambleFace[i] == "R") ||
+                        (scrambleFace[i-1] == "F" && scrambleFace[i] == "B") ||
+                        (scrambleFace[i-1] == "B" && scrambleFace[i] == "F")
+                    )){
+                        scrambleFace.pop();
+                        scrambleTurn.pop();
+                        i--;
+                    }
+                }
+            }
+            makeScramble = "";
+            for(i=0; i<scrambleFace.length; i++){
+                makeScramble += scrambleFace[i] + scrambleTurn[i] + " ";
+            }
+
+            solution = Cube.inverse(makeScramble)
+            makeScramble += "B' D' L' F' U' R' B' D' L' F' U' R'";
+
+            cube.identity();
+            cube.move(makeScramble);
+
+            scramble = Cube.inverse(cube.solve());
+            scrambleList = scramble.split(" ");
+            if(scrambleList[scrambleList.length - 1] == "R"){
+                scramble = "";
+                for(i=0; i<scrambleList.length-1; i++){
+                    scramble += scrambleList[i] + " ";
+                }
+                scramble = scramble + " R2 U F L D B R U F L D B";
+            } else if(scrambleList[scrambleList.length - 1] == "R2"){
+                scramble = "";
+                for(i=0; i<scrambleList.length-1; i++){
+                    scramble += scrambleList[i] + " ";
+                }
+                scramble = scramble + " R' U F L D B R U F L D B";
+            } else if(scrambleList[scrambleList.length - 1] == "R'"){
+                scramble = "";
+                for(i=0; i<scrambleList.length-1; i++){
+                    scramble += scrambleList[i] + " ";
+                }
+                scramble = scramble + " U F L D B R U F L D B";
+            } else {
+                scramble = scramble + " R U F L D B R U F L D B";
+            }
+        } else {
+            scramble = difficultMoveList[document.getElementById("difficultMoveCount").options[document.getElementById("difficultMoveCount").selectedIndex].value] + " ";
+            solution = Cube.inverse(scramble);
+            document.getElementById("giveup").style.visibility = "hidden";
+            document.getElementById("solution").style.visibility = "hidden";
+        }
+
+        scrambleWithoutSpace = scramble.replace(/\s+/g, "");
+        scrambleWithoutSpace = scrambleWithoutSpace.replace(/\'+/g, "%27");
+
+        document.getElementById("result").innerHTML += "scramble: " + scramble + "<br>";
+        document.getElementById("result").innerHTML += "<img src='http://cube.crider.co.uk/visualcube.php?fmt=png&size=200&alg=" + scrambleWithoutSpace + "'>" + "<br>";
+        document.getElementById("solution").innerHTML += "solution: " + solution + "<br>";
+        // document.getElementById("result").innerHTML += scrambleList;
+    }
+
+    document.onload = initScramble();
+
+    document.getElementById("giveup").onclick = function(){
+        document.getElementById("solution").style.visibility = "visible";
+    };
+
+    document.getElementById("selectRandomMove").onchange = function(){
+        document.getElementById("randomMove").style.display = "block";
+        document.getElementById("difficultMove").style.display = "none";
+        moveFlag = true;
+    };
+
+    document.getElementById("selectDifficultMove").onchange = function(){
+        document.getElementById("randomMove").style.display = "none";
+        document.getElementById("difficultMove").style.display = "block";
+        moveFlag = false;
+    };
+    </script>
+    
+</body>
+</html>
